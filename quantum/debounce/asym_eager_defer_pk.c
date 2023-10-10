@@ -27,12 +27,6 @@ When no state changes have occured for DEBOUNCE milliseconds, we push the state.
 #include "quantum.h"
 #include <stdlib.h>
 
-#ifdef PROTOCOL_CHIBIOS
-#    if CH_CFG_USE_MEMCORE == FALSE
-#        error ChibiOS is configured without a memory allocator. Your keyboard may have set `#define CH_CFG_USE_MEMCORE FALSE`, which is incompatible with this debounce algorithm.
-#    endif
-#endif
-
 #ifndef DEBOUNCE
 #    define DEBOUNCE 5
 #endif
@@ -51,10 +45,11 @@ typedef struct {
 } debounce_counter_t;
 
 #if DEBOUNCE > 0
-static debounce_counter_t *debounce_counters;
+static debounce_counter_t  debounce_counters[ROWS_PER_HAND * MATRIX_COLS];
 static fast_timer_t        last_time;
 static bool                counters_need_update;
 static bool                matrix_need_update;
+
 
 #    define DEBOUNCE_ELAPSED 0
 
@@ -63,8 +58,7 @@ static void transfer_matrix_values(matrix_row_t raw[], matrix_row_t cooked[], ui
 
 // we use num_rows rather than MATRIX_ROWS to support split keyboards
 void debounce_init(uint8_t num_rows) {
-    debounce_counters = malloc(num_rows * MATRIX_COLS * sizeof(debounce_counter_t));
-    int i             = 0;
+    int i = 0;
     for (uint8_t r = 0; r < num_rows; r++) {
         for (uint8_t c = 0; c < MATRIX_COLS; c++) {
             debounce_counters[i++].time = DEBOUNCE_ELAPSED;
@@ -72,10 +66,7 @@ void debounce_init(uint8_t num_rows) {
     }
 }
 
-void debounce_free(void) {
-    free(debounce_counters);
-    debounce_counters = NULL;
-}
+void debounce_free(void) {}
 
 void debounce(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows, bool changed) {
     bool updated_last = false;

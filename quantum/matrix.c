@@ -21,14 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "matrix.h"
 #include "debounce.h"
 #include "quantum.h"
-#ifdef SPLIT_KEYBOARD
-#    include "split_common/split_util.h"
-#    include "split_common/transactions.h"
-
-#    define ROWS_PER_HAND (MATRIX_ROWS / 2)
-#else
-#    define ROWS_PER_HAND (MATRIX_ROWS)
-#endif
 
 #ifdef DIRECT_PINS_RIGHT
 #    define SPLIT_MUTABLE
